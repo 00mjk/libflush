@@ -2,6 +2,7 @@
 #define EVICTION_H
 
 #include "libflush.h"
+#include <stdbool.h>
 
 /*
  * Init eviction process.
@@ -34,5 +35,20 @@ void libflush_eviction_prime(struct libflush_session_t *, size_t);
  */
 
 void libflush_eviction_probe(struct libflush_session_t *, size_t);
+
+/*
+ * Get number of cache sets.
+ */
+
+size_t libflush_eviction_get_number_of_sets(struct libflush_session_t *);
+
+/*
+ * Get pagemap entry.
+ */
+
+uint64_t libflush_get_pagemap_entry(struct libflush_session_t *, uint64_t);
+
+size_t libflush_eviction_get_set_index(struct libflush_session_t *, void *); 
+ 
 
 #endif
