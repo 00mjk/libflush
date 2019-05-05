@@ -11,10 +11,12 @@ project(
 
 compiler = meson.get_compiler('c')
 
-src = ['libflush.c', 'eviction.c', 'main.c']
+thread_dep = compiler.find_library('pthread', required: true)
+
+  src = ['libflush.c', 'eviction.c', 'timing.c', 'utils.c', 'main.c']
 
 incdirs = include_directories('include')
 
-executable('init', src, include_directories: incdirs, c_args: '-DHAVE_PAGEMAP_ACCESS=1')
+executable('init', src, include_directories: incdirs, dependencies: thread_dep, c_args: '-DHAVE_PAGEMAP_ACCESS=1')
 
 
