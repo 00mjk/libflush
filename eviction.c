@@ -88,6 +88,7 @@ static size_t get_phy_mem_size() {
 
 bool libflush_eviction_init(struct libflush_session_t *session,
         struct libflush_session_args_t *args) {
+    printf("[libflush]: Initialising eviction\n");
     if (session == NULL) {
         return false;
     }
@@ -102,13 +103,13 @@ bool libflush_eviction_init(struct libflush_session_t *session,
     pthread_mutex_lock(&(eviction->memory.lock));
 #endif
     eviction->memory.mapping_size = get_phy_mem_size() * 0.1;
-    printf("\n%ld\n", get_phy_mem_size());
 
     // Map memory
+    printf("[libflush]: Mapping memory\n");
     eviction->memory.mapping = mmap(NULL, eviction->memory.mapping_size,
             PROT_READ | PROT_WRITE, MAP_POPULATE | MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
-    // assert(eviction->memory.mapping != (void *) -1);
-    printf("\n%p\n", eviction->memory.mapping);
+    assert(eviction->memory.mapping != (void *) -1);
+    printf("[libflush]: Successfully allocated memory\n");
     // Clean up cache addresses.
    memset(eviction->virt_addr_cache, 0, ADDR_CACHE_SIZE * sizeof(virt_addr_cache_entry_t));
    memset(eviction->congruent_addr_cache, 0, NSETS * sizeof(congruent_addr_cache_entry_t));
@@ -118,10 +119,12 @@ bool libflush_eviction_init(struct libflush_session_t *session,
    pthread_mutex_unlock(&(eviction->memory.lock));
 #endif
 
+   printf("[libflush]: Initialisation of eviction completed \n");
    return true;
 }
 
 bool libflush_eviction_terminate(struct libflush_session_t *session) {
+    printf("[libflush]: Terminating libflush eviction.\n");
     if (session == NULL) {
         return false;
     }
@@ -149,9 +152,8 @@ bool libflush_eviction_terminate(struct libflush_session_t *session) {
     pthread_mutex_unlock(&(eviction->memory.lock));
     pthread_mutex_destory(&(eviction->memory.lock));
 #endif
-
-
-
+    
+    printf("[libflush]: Successfully terminated libflush eviction.\n");
     return true;
 }
 
