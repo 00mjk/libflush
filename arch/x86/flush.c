@@ -7,7 +7,7 @@
 void x86_flush(void* addr) {
   asm volatile ("clflush 0(%0)"
     :
-    : "r" (address)
+    : "r" (addr)
     : "rax"
   );
 }
