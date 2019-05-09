@@ -25,7 +25,7 @@ uint64_t get_monotonic_time() {
 #include <sys/syscall.h>
 
 bool perf_init(struct libflush_session_t *session, struct libflush_session_args_t *args) {
-
+   printf("[libflush]: Initialision of perf\n");
    static struct perf_event_attr attr;
    attr.type = PERF_TYPE_HARDWARE;
    attr.config = PERF_COUNT_HW_CPU_CYCLES;
@@ -36,15 +36,19 @@ bool perf_init(struct libflush_session_t *session, struct libflush_session_args_
 
    session->perf.fd = syscall(__NR_perf_event_open, &attr, 0, -1, -1, 0);
    assert(session->perf.fd >= 0); // Perf events are supported.
+   printf("[libflush]: Completed initialisation of perf\n");
    return true;
 }
 
 bool perf_terminate(struct libflush_session_t *session) {
+    printf("[libflush]: Terminating perf\n");
     close(session->perf.fd);
+    printf("[libflush]: Perf has been closed\n");
     return true;
 }
 
 uint64_t perf_get_timing(struct libflush_session_t *session) {
+    //printf("[libflush]: Perf fetching time\n");
     uint64_t result = 0;
     if (read(session->perf.fd, &result, sizeof(result)) < (ssize_t) sizeof(result)) {
         return 0;
@@ -53,6 +57,7 @@ uint64_t perf_get_timing(struct libflush_session_t *session) {
 }
 
 void perf_reset_timing(struct libflush_session_t *session) {
+    printf("[libflush]: Perf resetting time\n");
     ioctl(session->perf.fd, PERF_EVENT_IOC_RESET, 0);
 }
 #endif
