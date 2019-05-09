@@ -39,6 +39,12 @@ bool libflush_terminate(struct libflush_session_t *);
 
 uint64_t libflush_get_timing(struct libflush_session_t *);
 
+// Measure start time
+uint64_t libflush_get_timing_start(struct libflush_session_t *);
+
+// Measure end time
+uint64_t libflush_get_timing_end(struct libflush_session_t *);
+
 /*
  * Reset the timer.
  */
@@ -97,6 +103,7 @@ uint64_t libflush_reload_addr(struct libflush_session_t *, void *);
 
 uint64_t libflush_reload_addr_and_flush(struct libflush_session_t *, void *);
 
+// Reload and evict, similar to above
 uint64_t libflush_reload_addr_and_evict(struct libflush_session_t *, void *);
 
 /*

@@ -17,34 +17,35 @@
 #include "arm/flush.h"
 #include "arm/memory.h"
 #include "arm/timing.h"
-#elif defined(__x86__)
+#endif
+
+#if defined(__x86__)
 #include "x86/flush.h"
 #include "x86/memory.h"
 #include "x86/timing.h"
 #endif
 
 
-/*
- * Init libflush session
- */
-
+// Initialize libflush session
 bool libflush_init(struct libflush_session_t **session, struct libflush_session_args_t *args) {  
+    printf("[libflush]: Initialising session\n");
     if (session == NULL) {
         return false;
     } 
     if ((*session = calloc(1, sizeof(struct libflush_session_t))) == NULL) {
         return false;
     }
-    printf("Initialized session");
     if (args) {
         (*session)->performance_register_div64 = args->performance_register_div64;
     }
 #if HAVE_PAGEMAP_ACCESS == 1
+    printf("[libflush]: Opening pagemap file\n"); 
     (*session)->memory.pagemap = open("/proc/self/pagemap", O_RDONLY);
     if ((*session)->memory.pagemap == -1) {
         free(*session);
         return false;
     }
+    printf("[libflush]: Completed opening pagemap file\n");
 #endif
    
 #if TIME_SOURCE == TIME_SOURCE_PERF
@@ -68,15 +69,18 @@ bool libflush_init(struct libflush_session_t **session, struct libflush_session_
  */
 
 bool libflush_terminate(struct libflush_session_t *session) {
+    printf("[libflush]: Terminating libflush session\n");
     if (session == NULL) {
         return false;
     }
 
 #if HAVE_PAGEMAP_ACCESS == 1
+    printf("[libflush]: Closing pagemap file\n");
     if (session->memory.pagemap >= 0) {
         close(session->memory.pagemap);
     }
     session->memory.pagemap = -1;
+    printf("[libflush]: Completed closing pagemap file\n");
 #endif
 
     /* Terminate timer */
@@ -95,7 +99,7 @@ bool libflush_terminate(struct libflush_session_t *session) {
 
     // Clean up 
     free(session);
-
+    printf("[libflush]: Successfully terminated libflush session\n");
     return true;
 }
 
@@ -167,9 +171,9 @@ void libflush_reset_timing(struct libflush_session_t *session) {
 // Perform memory access
 inline void libflush_access_memory(void *addr) {
 #if defined(__ARM__)
-    arm_v8_access_memory();
+    arm_v8_access_memory(addr);
 #elif defined(__x86__)
-    x86_access_memory();
+    x86_access_memory(addr);
 #endif
 }
 
@@ -211,8 +215,25 @@ uint64_t libflush_reload_addr(struct libflush_session_t *session, void *addr) {
     return libflush_get_timing(session) - start;
 }
 
-// Functions to prime probe and calc access time.
+// Flush - Reload
+uint64_t libflush_reload_addr_and_flush(struct libflush_session_t *session, void *addr) {
+    uint64_t start = libflush_get_timing_start(session);
+    libflush_access_memory(addr);
+    uint64_t delta = libflush_get_timing_end(session) - start;
+    libflush_flush(session, addr);
+    return delta;
+}
 
+//Flush - Evict
+uint64_t libflush_reload_addr_and_evict(struct libflush_session_t *session, void *addr) {
+    uint64_t start = libflush_get_timing_start(session);
+    libflush_access_memory(addr);
+    uint64_t delta = libflush_get_timing_end(session) - start;
+    libflush_evict(session, addr);
+    return delta;
+}
+
+// Functions to prime probe and calc access time.
 void libflush_prime(struct libflush_session_t *session, size_t index) {
     libflush_eviction_prime(session, index);
 }
