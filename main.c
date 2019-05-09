@@ -12,13 +12,9 @@ int main() {
     lst = malloc(sizeof(struct libflush_session_t **));
     struct libflush_session_args_t *sess_args;
     sess_args = malloc(sizeof(struct libflush_session_args_t));
-
-    printf("%d", libflush_init(lst, sess_args));
+    libflush_init(lst, sess_args);
     struct libflush_session_t *ls = *lst;
-#if HAVE_PAGEMAP_ACCESS == 1
-    printf("%d", (ls->memory).pagemap);
-#endif
-    libflush_terminate(*lst);
+    libflush_terminate(ls);
 
     return 0;
 }
